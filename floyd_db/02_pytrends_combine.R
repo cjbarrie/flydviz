@@ -112,3 +112,28 @@ rachits$lword <- paste(rachits$geo, rachits$language, sep=": ")
 rachits <- subset(rachits, lword!="UA: Russian")
 
 save(rachits, file = "data/output/rachits1.RData")
+
+#get country names for Latex
+
+fullcountcodes <- read.csv("data/output/fullcountcodes.csv")
+cnts <- unique(rachits$geo)
+fullcountcodes <- fullcountcodes[,-1]
+colnames(fullcountcodes) <- c("country", "geo")
+final_cnts <- subset(fullcountcodes, geo %in% cnts)
+
+final_cnts <- final_cnts[!duplicated(final_cnts$country), ]
+final_cnts$country_code <- paste(final_cnts$geo, final_cnts$country, sep= ": ")
+country_codes <- final_cnts$country_code
+country_codes <- sort(country_codes)
+
+ccodes <- as.character()
+for (i in 1:length(country_codes)) {
+  cntp <- country_codes[i]
+  sep <- ifelse(is_empty(ccodes), "","; ")
+  ccodes <- paste(ccodes, cntp, sep=sep)
+}
+#file for latex inclusion
+write.table(ccodes, "data/output/ccode_countries.txt", col.names = F, row.names = F,
+            quote=F)
+#file for viz. inclusion
+save(ccodes, file = "data/output/ccodes.RData")

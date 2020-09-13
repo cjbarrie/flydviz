@@ -21,6 +21,10 @@ rachitsbd$hitfac <- cut(rachitsbd$rhits,
                                  "30-40", "40-50", "50-60",
                                  "60-70", "70-80", "80-90", "90-100"))
 
+load("data/output/ccodes.Rdata")
+#get country codes split at every nth element
+ccodesn <- gsub('(.{1,200})(\\s|$)', '\\1\n', ccodes)
+
 hmp <- ggplot(rachitsbd,aes(date,lword,fill=hitfac)) +
   geom_tile(colour="#faf8f3",size=0.6) +
   geom_segment(x=as.Date("2020-05-25"), xend=as.Date("2020-05-25"), y=-10, 
@@ -43,7 +47,10 @@ hmp <- ggplot(rachitsbd,aes(date,lword,fill=hitfac)) +
         plot.background = element_rect(fill = "#faf8f3", color = NA), 
         panel.background = element_rect(fill = "#faf8f3", color = NA), 
         legend.background = element_rect(fill = "#faf8f3", color = NA),
-        plot.margin=margin(0.7,0.4,0.1,0.2,"cm"))
+        plot.margin=margin(0.7,0.4,.1,0.2,"cm"),
+        plot.caption = element_text(size=20, hjust=0,
+                                    margin=margin(t=50,0,0,0))) +
+  labs(caption = ccodesn)
 
 cntincs <- rachitsbd %>%
   group_by(lword) %>%
@@ -51,13 +58,16 @@ cntincs <- rachitsbd %>%
          mpcnt = mean(hits))
 cntincs$mostd <- (cntincs$hits - cntincs$mpcnt)/(cntincs$sdpcnt)
 
-#2020-06-30 is first dat with negative global mean standardized search interest
-test <- cntincs %>%
+#2020-06-30 is first date with negative global mean standardized search interest
+getdates <- cntincs %>%
   group_by(date) %>%
   summarise(avgmstd = mean(mostd))
-date1 <- test$date[test$avgmstd>0 & test$date>="2020-05-26" & test$date<"2020-06-30"]
-date2 <- test$date[test$avgmstd>1 & test$date>="2020-05-26" & test$date<"2020-06-30"]
-date3 <- test$date[test$avgmstd>2 & test$date>="2020-05-26" & test$date<"2020-06-30"]
+date1 <- getdates$date[getdates$avgmstd>0 & getdates$date>="2020-05-26" & 
+                         getdates$date<"2020-06-30"]
+date2 <- getdates$date[getdates$avgmstd>1 & getdates$date>="2020-05-26" & 
+                         getdates$date<"2020-06-30"]
+date3 <- getdates$date[getdates$avgmstd>2 & getdates$date>="2020-05-26" & 
+                         getdates$date<"2020-06-30"]
 
 sdp <- cntincs %>% 
   group_by(date) %>%
@@ -75,7 +85,7 @@ sdp <- cntincs %>%
                    y=1,yend=1),size=.8, col="black", linetype="dashed") +
   geom_segment(aes(x=as.Date("2020-01-05"),xend=as.Date("2020-08-18"), #mean
                    y=0,yend=0),size=.8, col="black", linetype="dashed") +
-  ylab("Mean standardized hits") +
+  ylab("Standardized search interest") +
   theme_tufte(base_size=10, base_family = "GillSans") +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
