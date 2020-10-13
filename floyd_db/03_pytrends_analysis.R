@@ -29,9 +29,11 @@ hmp <- ggplot(rachitsbd,aes(date,lword,fill=hitfac)) +
   geom_tile(colour="#faf8f3",size=0.6) +
   geom_segment(x=as.Date("2020-05-25"), xend=as.Date("2020-05-25"), y=-10, 
                yend=150, size=1, col="red4") +
-  guides(fill=guide_legend(title="Search interest",
+  guides(fill=guide_legend(title=paste0("Search interest\n for ",'"',"racism",'"'),
                            nrow=1)) +
-  labs(x="Date",y="Country: Language",title="") +
+  labs(x="Month | Week\n ",y="Country: Language\n ",title="") + #add line break on y-axis so red vline lines up across top and bottom panels
+  scale_x_date(date_labels="%b \n", date_breaks="month",
+               date_minor_breaks = "week") +
   scale_fill_grey(start = 1, end=0) + 
   theme_tufte(base_size=10, base_family = "GillSans") +
   theme(legend.position="bottom",
@@ -50,7 +52,26 @@ hmp <- ggplot(rachitsbd,aes(date,lword,fill=hitfac)) +
         plot.margin=margin(0.7,0.4,.1,0.2,"cm"),
         plot.caption = element_text(size=20, hjust=0,
                                     margin=margin(t=50,0,0,0))) +
-  labs(caption = ccodesn)
+  labs(caption = ccodesn) +
+  annotate("rect", fill = "#b80000", alpha = 0, #creates blank space at top for red line label
+           xmin= min(date1), xmax= max(date1), 
+           ymin = 120, ymax = 124) +
+  annotate("text", x = as.Date("2020-05-12"), 
+           y = 122, label = "George Floyd killed \n May 25, 2020", 
+           size=7, fontface="bold") +
+  annotate("rect", fill = "#b80000", alpha = 0, #creates blank space at bottom for week labels
+           xmin= min(date1), xmax= max(date1), 
+           ymin = -1, ymax = 0)
+
+#add weekly minor ticks with small hackaround
+dates <- seq(as.Date("2020/01/01"), by = "week", length.out = 33)
+dates
+
+for(date in seq_along(dates)) {
+  hmp <- hmp + geom_segment(x=as.Date(dates[date]), xend=as.Date(dates[date]), y=-1, 
+                            yend=0, size=1, col="black")
+}
+hmp
 
 cntincs <- rachitsbd %>%
   group_by(lword) %>%
@@ -77,6 +98,7 @@ sdp <- cntincs %>%
   geom_point(aes(date, mostd, group = lword),  color = "grey50", 
              show.legend = F, alpha = 0.3, size = 1) +
   scale_fill_identity() +
+  scale_x_date(date_breaks="month") +
   geom_vline(aes(xintercept = as.integer(as.Date("2020-05-25"))),
              size=1, col="red4") +
   geom_segment(aes(x=as.Date("2020-01-05"),xend=as.Date("2020-08-18"), #2SDs
@@ -85,7 +107,7 @@ sdp <- cntincs %>%
                    y=1,yend=1),size=.8, col="black", linetype="dashed") +
   geom_segment(aes(x=as.Date("2020-01-05"),xend=as.Date("2020-08-18"), #mean
                    y=0,yend=0),size=.8, col="black", linetype="dashed") +
-  ylab("Standardized search interest") +
+  ylab("Standardized search interest \n ") +
   theme_tufte(base_size=10, base_family = "GillSans") +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
@@ -117,4 +139,4 @@ gg <- ggarrange(sdp,hmp,
                 ncol = 1, nrow = 2,  align = "v", 
                 widths = c(1, 1), heights = c(1,5))
 
-ggsave("data/output/plots/plot2gg.png", width=800, height = 900, dpi=300, units="mm")
+ggsave("data/output/plots/plot2gg_v2.png", width=800, height = 900, dpi=100, units="mm")
