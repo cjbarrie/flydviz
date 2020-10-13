@@ -8,3 +8,7 @@ Scripts for Google Trends visualization
 - 01_pytrends_racism1.ipynb : Alternative jupyter notebook to gather Google Trends data with pytrends
 - 02_pytrends_combine.R : Combine country-level Google Trends data into single .Rdata file
 - 03_pytrends_analysis.R : Visualize Google Trends data
+
+
+
+![Visualization](https://github.com/cjbarrie/flydviz/blob/master/floyd_db/data/output/plots/plot2gg_v2.png)
