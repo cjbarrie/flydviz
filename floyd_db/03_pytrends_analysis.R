@@ -25,6 +25,24 @@ load("data/output/ccodes.Rdata")
 #get country codes split at every nth element
 ccodesn <- gsub('(.{1,200})(\\s|$)', '\\1\n', ccodes)
 
+#get cntincs for top viz and dates1:dates3
+cntincs <- rachitsbd %>%
+  group_by(lword) %>%
+  mutate(sdpcnt = sd(hits),
+         mpcnt = mean(hits))
+cntincs$mostd <- (cntincs$hits - cntincs$mpcnt)/(cntincs$sdpcnt)
+
+#2020-06-30 is first date with negative global mean standardized search interest
+getdates <- cntincs %>%
+  group_by(date) %>%
+  summarise(avgmstd = mean(mostd))
+date1 <- getdates$date[getdates$avgmstd>0 & getdates$date>="2020-05-26" & 
+                         getdates$date<"2020-06-30"]
+date2 <- getdates$date[getdates$avgmstd>1 & getdates$date>="2020-05-26" & 
+                         getdates$date<"2020-06-30"]
+date3 <- getdates$date[getdates$avgmstd>2 & getdates$date>="2020-05-26" & 
+                         getdates$date<"2020-06-30"]
+
 hmp <- ggplot(rachitsbd,aes(date,lword,fill=hitfac)) +
   geom_tile(colour="#faf8f3",size=0.6) +
   geom_segment(x=as.Date("2020-05-25"), xend=as.Date("2020-05-25"), y=-10, 
@@ -72,23 +90,6 @@ for(date in seq_along(dates)) {
                             yend=0, size=1, col="black")
 }
 hmp
-
-cntincs <- rachitsbd %>%
-  group_by(lword) %>%
-  mutate(sdpcnt = sd(hits),
-         mpcnt = mean(hits))
-cntincs$mostd <- (cntincs$hits - cntincs$mpcnt)/(cntincs$sdpcnt)
-
-#2020-06-30 is first date with negative global mean standardized search interest
-getdates <- cntincs %>%
-  group_by(date) %>%
-  summarise(avgmstd = mean(mostd))
-date1 <- getdates$date[getdates$avgmstd>0 & getdates$date>="2020-05-26" & 
-                         getdates$date<"2020-06-30"]
-date2 <- getdates$date[getdates$avgmstd>1 & getdates$date>="2020-05-26" & 
-                         getdates$date<"2020-06-30"]
-date3 <- getdates$date[getdates$avgmstd>2 & getdates$date>="2020-05-26" & 
-                         getdates$date<"2020-06-30"]
 
 sdp <- cntincs %>% 
   group_by(date) %>%
